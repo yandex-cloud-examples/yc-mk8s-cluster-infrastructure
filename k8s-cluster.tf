@@ -94,19 +94,46 @@ resource "yandex_iam_service_account" "k8s-sa" {
   name = local.sa_name
 }
 
-resource "yandex_resourcemanager_folder_iam_binding" "editor" {
-  # Assign "editor" role to service account.
+resource "yandex_resourcemanager_folder_iam_binding" "k8s-clusters-agent" {
+  # Assign the "k8s.clusters.agent" role to the service account
   folder_id = local.folder_id
-  role      = "editor"
+  role      = "k8s.clusters.agent"
+  members = [
+    "serviceAccount:${yandex_iam_service_account.k8s-sa.id}"
+  ]
+}
+
+resource "yandex_resourcemanager_folder_iam_binding" "k8s-tunnelClusters-agent" {
+  # Assign the "k8s.tunnelClusters.agent" role to the service account
+  folder_id = local.folder_id
+  role      = "k8s.tunnelClusters.agent"
+  members = [
+    "serviceAccount:${yandex_iam_service_account.k8s-sa.id}"
+  ]
+}
+
+resource "yandex_resourcemanager_folder_iam_binding" "vpc-publicAdmin" {
+  # Assign the "vpc.publicAdmin" role to the service account
+  folder_id = local.folder_id
+  role      = "vpc.publicAdmin"
   members = [
     "serviceAccount:${yandex_iam_service_account.k8s-sa.id}"
   ]
 }
 
 resource "yandex_resourcemanager_folder_iam_binding" "images-puller" {
-  # Assign "container-registry.images.puller" role to service account.
+  # Assign the "container-registry.images.puller" role to the service account
   folder_id = local.folder_id
   role      = "container-registry.images.puller"
+  members = [
+    "serviceAccount:${yandex_iam_service_account.k8s-sa.id}"
+  ]
+}
+
+resource "yandex_resourcemanager_folder_iam_binding" "lb-admin" {
+  # Assign the "load-balancer.admin" role to the service account
+  folder_id = local.folder_id
+  role      = "load-balancer.admin"
   members = [
     "serviceAccount:${yandex_iam_service_account.k8s-sa.id}"
   ]
@@ -133,8 +160,11 @@ resource "yandex_kubernetes_cluster" "k8s-cluster" {
   service_account_id      = yandex_iam_service_account.k8s-sa.id # Cluster service account ID
   node_service_account_id = yandex_iam_service_account.k8s-sa.id # Node group service account ID
   depends_on = [
-    yandex_resourcemanager_folder_iam_binding.editor,
-    yandex_resourcemanager_folder_iam_binding.images-puller
+    yandex_resourcemanager_folder_iam_binding.k8s-clusters-agent,
+    yandex_resourcemanager_folder_iam_binding.k8s-tunnelClusters-agent,
+    yandex_resourcemanager_folder_iam_binding.vpc-publicAdmin,
+    yandex_resourcemanager_folder_iam_binding.images-puller,
+    yandex_resourcemanager_folder_iam_binding.lb-admin
   ]
 }
 
