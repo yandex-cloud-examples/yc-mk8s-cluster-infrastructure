@@ -78,7 +78,7 @@ resource "yandex_vpc_security_group" "k8s-nodegroup-traffic" {
 
 resource "yandex_vpc_security_group" "k8s-services-access" {
   name        = "k8s-services-access"
-  description = "The group rules allow connections to services from the internet. Apply it to node groups."
+  description = "The group rules allow connections to services from the Internet. Apply it to node groups."
   network_id  = yandex_vpc_network.k8s-network.id
   ingress {
     description    = "The rule allows incoming traffic in order to connect to Kubernetes services."
